@@ -1,0 +1,20 @@
+<!ENTITY qg.title.page "Preferences | Quick Gestures" >
+<!ENTITY qg.title.header "Preferences" >
+<!ENTITY qg.title.timeout "Timeout" >
+<!ENTITY qg.title.display "Display" >
+<!ENTITY qg.title.recognition "Recognition" >
+<!ENTITY qg.title.gestures "Gestures" >
+<!ENTITY qg.text.resetGestures "Reset" >
+<!ENTITY qg.text.resetSettings "Reset" >
+<!ENTITY qg.text.slide1 "Gestures" >
+<!ENTITY qg.text.slide2 "Advanced" >
+<!ENTITY qg.text.showLayer "Show the command layer" >
+<!ENTITY qg.text.showToast "Show a toast message" >
+<!ENTITY qg.text.timeout "Time until gesture cancellation after the finger stopped moving" >
+<!ENTITY qg.text.distance "Movement distance" >
+<!ENTITY qg.text.displayWidth "display-width" >
+<!ENTITY qg.text.sensitivity "Sensitivity" >
+<!ENTITY qg.text.long "Long" >
+<!ENTITY qg.text.short "Short" >
+<!ENTITY qg.text.high "High" >
+<!ENTITY qg.text.low "Low" >

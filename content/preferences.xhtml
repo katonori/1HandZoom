@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd" [
+<!ENTITY nbsp "&#160;">
+<!ENTITY % qgPrefDTD SYSTEM "chrome://quickgestures/locale/preferences.dtd">
+%qgPrefDTD;
+]>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8" />
+  <title>&qg.title.page;</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <link rel="stylesheet" type="text/css" href="preferences.css" />
+  <script type="application/javascript;version=1.8" src="preferences.js"></script>
+</head>
+<body>
+  <div id="main-container">
+
+      <!-- Slider Control (hidden) -->
+      <input type="radio" name="slider" id="slide1" class="slider-switch" checked="true"></input>
+      <input type="radio" name="slider" id="slide2" class="slider-switch"></input>
+      <!-- /Slider Control (hidden) -->
+
+      <div class="slides">
+        <div id="slide-1" class="slide">
+          <header class="page-header">
+            <div class="nav-space"><h1>&qg.title.header;</h1></div>
+            <div class="nav-label text-r"><label for="slide2">&qg.text.slide2;</label></div>
+            <div class="nav-arrow"><div class="right-arrow"></div></div>
+          </header>
+
+          <section class="section">
+            <!--<header class="section-header">-->
+              <!--<h2>&qg.title.gestures;</h2>-->
+            <!--</header>-->
+
+            <div id="gestures" class="section-body">
+              <div class="content pref-gesture">
+                <div class="g-cmd">History Back</div>
+                <div class="g-seq" id="g-Historyclassward" qg-key="HistoryForward" qg-name="History Forward" >DL</div>
+              </div>
+            </div>
+
+            <!--<footer class="section-footer"></footer>-->
+          </section>
+
+          <footer class="page-footer">
+            <div id="gestures-reset-button" class="reset-button">&qg.text.resetGestures;</div>
+          </footer>
+        </div>
+
+
+        <div id="slide-2" class="slide">
+          <header class="page-header">
+            <div class="nav-arrow"><div class="left-arrow"></div></div>
+            <div class="nav-label text-l"><label for="slide1">&qg.text.slide1;</label></div>
+            <div class="nav-space"></div>
+          </header>
+
+          <section class="section" id="display-section">
+            <header class="section-header">
+              <h2>&qg.title.display;</h2>
+            </header>
+
+            <div class="section-body">
+              <div class="content pref-checkbox" for="layerVisible">
+                <div>
+                  <!--<h3></h3>-->
+                  <p>&qg.text.showLayer;</p>
+                </div>
+                <div>
+                  <input type="checkbox" id="layerVisible"></input>
+                  <label for="layerVisible"></label>
+                </div>
+              </div>
+
+              <div class="content pref-checkbox" for="toastVisible">
+                <div>
+                  <!--<h3></h3>-->
+                  <p>&qg.text.showToast;</p>
+                </div>
+                <div>
+                  <input type="checkbox" id="toastVisible"></input>
+                  <label for="toastVisible"></label>
+                </div>
+              </div>
+            </div>
+
+            <!--<footer class="section-footer"></footer>-->
+          </section>
+
+          <section class="section" id="timeout-section">
+            <header class="section-header">
+              <h2>&qg.title.timeout;</h2>
+            </header>
+
+            <div class="section-body">
+              <div class="content pref-seekbar">
+                <div>
+                  <!--<h3></h3>-->
+                  <p>&qg.text.timeout;</p>
+                </div>
+                <div>
+                    <input type="range" min="200" max="400" step="1" value="300"
+                      id="timeoutSeekbarInput"
+                    ></input>
+                    <output id="timeoutSeekbarOutput">0ms</output>
+                </div>
+              </div>
+            </div>
+
+            <!--<footer class="section-footer"></footer>-->
+          </section>
+
+          <section class="section" id="recognition-section">
+            <header class="section-header">
+              <h2>&qg.title.recognition;</h2>
+            </header>
+
+            <div class="section-body">
+              <div class="content pref-seekbar">
+                <div>
+                  <!--<h3></h3>-->
+                  <p>
+                    &qg.text.distance; (&qg.text.displayWidth; / <output id="splitsSeekbarOutput"></output>)
+                  </p>
+                </div>
+                <div>
+                    <span>&qg.text.long;</span>
+                    <input type="range" min="2" max="16" step="1" value="10"
+                           id="splitsSeekbarInput"
+                    ></input>
+                    <span>&qg.text.short;</span>
+                </div>
+              </div>
+
+              <div class="content pref-seekbar">
+                <div>
+                  <!--<h3></h3>-->
+                  <p>
+                    &qg.text.sensitivity; (<output id="angleSeekbarOutput"></output>)
+                  </p>
+                </div>
+                <div>
+                    <span>&qg.text.low;</span>
+                    <input type="range" min="10" max="80" step="5" value="60"
+                           id="angleSeekbarInput"
+                    ></input>
+                    <span>&qg.text.high;</span>
+                </div>
+              </div>
+            </div>
+
+            <!--<footer class="section-footer"></footer>-->
+          </section>
+
+          <footer class="page-footer">
+            <div id="settings-reset-button" class="reset-button">&qg.text.resetSettings;</div>
+          </footer>
+        </div>
+      </div>
+  </div>
+</body>
+</html>
