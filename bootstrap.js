@@ -97,6 +97,9 @@ let QuickGestures = {
         }
     },
 
+    _menuIdZoomIn: null,
+    _menuIdZoomOut: null,
+
     load: function(aWindow) {
         //debug('load(' + aWindow + ')');
 
@@ -107,7 +110,48 @@ let QuickGestures = {
         deck.addEventListener('touchstart', this, true);
         deck.addEventListener('touchmove', this, true);
         deck.addEventListener('touchend', this, true);
-        alert("loaded");
+
+        // add menu
+        this._menuIdZoomIn = aWindow.NativeWindow.menu.add("Zoom In", null, this._cbZoomIn);
+        this._menuIdZoomOut = aWindow.NativeWindow.menu.add("Zoom Out", null, this._cbZoomOut);
+    },
+
+    _cbZoomIn: function() {
+        let chromeWindow = Services.wm.getMostRecentWindow('navigator:browser');
+        let selectedTab = chromeWindow.BrowserApp.selectedTab;
+        let window = selectedTab.window;
+        let zoom = 1.0;
+        if(selectedTab._localZoom == undefined) {
+            zoom = selectedTab._zoom;
+        }
+        else {
+            zoom = selectedTab._localZoom;
+        }
+        zoom += 0.2;
+        debug("ZoomIn: " + zoom);
+        window.document.body.style.MozTransformOrigin = "0 0";
+        window.document.body.style.MozTransform = "scale(" + zoom + ")";
+        selectedTab._localZoom = zoom;
+    },
+    _cbZoomOut: function() {
+        let chromeWindow = Services.wm.getMostRecentWindow('navigator:browser');
+        let selectedTab = chromeWindow.BrowserApp.selectedTab;
+        let window = selectedTab.window;
+        let zoom = 1.0;
+        if(selectedTab._localZoom == undefined) {
+            zoom = selectedTab._zoom;
+        }
+        else {
+            zoom = selectedTab._localZoom;
+        }
+        zoom -= 0.2;
+        if(zoom < 0) {
+            zoom = 0.0;
+        }
+        debug("ZoomOut: " + zoom);
+        window.document.body.style.MozTransformOrigin = "0 0";
+        window.document.body.style.MozTransform = "scale(" + zoom + ")";
+        selectedTab._localZoom = zoom;
     },
 
     unload: function(aWindow) {
@@ -115,6 +159,9 @@ let QuickGestures = {
 
         if (!aWindow)
             return;
+
+        aWindow.NativeWindow.menu.remove(this._menuIdZoomIn);
+        aWindow.NativeWindow.menu.remove(this._menuIdZoomOut);
 
         let deck = aWindow.BrowserApp.deck;
         deck.removeEventListener('touchstart', this, true);
@@ -141,7 +188,6 @@ let QuickGestures = {
                 this._updateThreshold();
                 break;
         }
-        this._handleUserEvent(aTopic, aData);
     },
 
     handleEvent: function(aEvent) {
@@ -179,17 +225,6 @@ let QuickGestures = {
         }
     },
 
-    _handleUserEvent: function(aTopic, aData) {
-        switch(aTopic) {
-        case "Gesture:DoubleTap":
-            alert("OBS: " + aTopic);
-            break;
-        case "Gesture:SingleTap":
-            alert("OBS: " + aTopic);
-            break;
-        }
-    },
-
     _startStroke: function(aEvent) {
         //debug('_startStroke(' + aEvent + ')');
 
@@ -218,7 +253,7 @@ let QuickGestures = {
     },
 
     _progressStroke: function(aEvent) {
-        //debug('_progressStroke(' + aEvent + ')');
+        //debug('_progressStroke(' + aEvent.type + ')');
 
         if (!this._inProgress)
             return;
