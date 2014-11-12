@@ -110,6 +110,8 @@ let QuickGestures = {
         deck.addEventListener('touchstart', this, true);
         deck.addEventListener('touchmove', this, true);
         deck.addEventListener('touchend', this, true);
+        aWindow.document.addEventListener('MozMagnifyGesture', this, true);
+        aWindow.document.addEventListener('MozMagnifyGestureStart', this, true);
 
         // add menu
         this._menuIdZoomIn = aWindow.NativeWindow.menu.add("Zoom In", null, this._cbZoomIn);
@@ -117,41 +119,10 @@ let QuickGestures = {
     },
 
     _cbZoomIn: function() {
-        let chromeWindow = Services.wm.getMostRecentWindow('navigator:browser');
-        let selectedTab = chromeWindow.BrowserApp.selectedTab;
-        let window = selectedTab.window;
-        let zoom = 1.0;
-        if(selectedTab._localZoom == undefined) {
-            zoom = selectedTab._zoom;
-        }
-        else {
-            zoom = selectedTab._localZoom;
-        }
-        zoom += 0.2;
-        debug("ZoomIn: " + zoom);
-        window.document.body.style.MozTransformOrigin = "0 0";
-        window.document.body.style.MozTransform = "scale(" + zoom + ")";
-        selectedTab._localZoom = zoom;
+        zoomIn();
     },
     _cbZoomOut: function() {
-        let chromeWindow = Services.wm.getMostRecentWindow('navigator:browser');
-        let selectedTab = chromeWindow.BrowserApp.selectedTab;
-        let window = selectedTab.window;
-        let zoom = 1.0;
-        if(selectedTab._localZoom == undefined) {
-            zoom = selectedTab._zoom;
-        }
-        else {
-            zoom = selectedTab._localZoom;
-        }
-        zoom -= 0.2;
-        if(zoom < 0) {
-            zoom = 0.0;
-        }
-        debug("ZoomOut: " + zoom);
-        window.document.body.style.MozTransformOrigin = "0 0";
-        window.document.body.style.MozTransform = "scale(" + zoom + ")";
-        selectedTab._localZoom = zoom;
+        zoomOut();
     },
 
     unload: function(aWindow) {
@@ -167,6 +138,8 @@ let QuickGestures = {
         deck.removeEventListener('touchstart', this, true);
         deck.removeEventListener('touchmove', this, true);
         deck.removeEventListener('touchend', this, true);
+        aWindow.document.removeEventListener('MozMagnifyGesture', this, true);
+        aWindow.document.removeEventListener('MozMagnifyGestureStart', this, true);
     },
 
     observe: function(aSubject, aTopic, aData) {
@@ -188,13 +161,17 @@ let QuickGestures = {
                 this._updateThreshold();
                 break;
         }
+        this._handleUserEvent(aTopic, aData);
     },
 
     handleEvent: function(aEvent) {
-        const fingers = aEvent.touches.length;
+        let fingers = null;
+        let selectedTab = getSelectedTab();
+        let window = selectedTab.window;
 
         switch (aEvent.type) {
             case 'touchstart':
+                fingers = aEvent.touches.length;
                 if (fingers != 1)
                     break;
 
@@ -202,6 +179,7 @@ let QuickGestures = {
                 break;
 
             case 'touchmove':
+                fingers = aEvent.touches.length;
                 if (fingers != 1)
                     break;
 
@@ -217,20 +195,47 @@ let QuickGestures = {
                 break;
 
             case 'touchend':
+                fingers = aEvent.touches.length;
                 if (fingers != 0)
                     break;
 
                 this._stopStroke(aEvent);
                 break;
         }
+
+        switch (aEvent.type) {
+            case 'MozMagnifyGestureStart':
+            case 'MozMagnifyGesture':
+                break;
+        }
+    },
+
+    _handleUserEvent: function(aTopic, aData) {
+        let chromeWindow = Services.wm.getMostRecentWindow('navigator:browser');
+        let selectedTab = chromeWindow.BrowserApp.selectedTab;
+        let window = selectedTab.window;
+        switch(aTopic) {
+        case "Gesture:DoubleTap":
+            break;
+        }
     },
 
     _startStroke: function(aEvent) {
         //debug('_startStroke(' + aEvent + ')');
-
+        const touch = aEvent.touches.item(0);
         this._chromeWindow = Services.wm.getMostRecentWindow('navigator:browser');
         this._selectedTab = this._chromeWindow.BrowserApp.selectedTab;
         this._contentWindow = this._selectedTab.browser.contentWindow;
+
+        const cWin = this._contentWindow;
+        //const docW = this._selectedTab.window.document.documentElement.clientWidth;
+        const docW = cWin.innerWidth;
+        const docH = this._selectedTab.window.document.documentElement.clientHeight;
+        const range = docW * 0.9;
+        if(touch.screenX < range) {
+            this._cancelStroke(aEvent);
+            return;
+        }
 
         const viewport = this._selectedTab.getViewport();
         const w = viewport.cssWidth;
@@ -238,7 +243,6 @@ let QuickGestures = {
 
         this._threshold = Math.round( (w < h ? w : h) / this._splits);
 
-        const touch = aEvent.touches.item(0);
         this._lastX = touch.screenX;
         this._lastY = touch.screenY;
         this._gesture = '';
@@ -254,6 +258,16 @@ let QuickGestures = {
 
     _progressStroke: function(aEvent) {
         //debug('_progressStroke(' + aEvent.type + ')');
+        const touch = aEvent.touches.item(0);
+        const cWin = this._contentWindow;
+        //const docW = this._selectedTab.window.document.documentElement.clientWidth;
+        const docW = cWin.innerWidth;
+        const docH = this._selectedTab.window.document.documentElement.clientHeight;
+        const range = docW * 0.9;
+        if(touch.screenX < range) {
+            this._cancelStroke(aEvent);
+            return;
+        }
 
         if (!this._inProgress)
             return;
@@ -277,7 +291,6 @@ let QuickGestures = {
             }
         }
 
-        const touch = aEvent.touches.item(0);
         //this._displayDebugInfo(touch);
 
         const x = touch.screenX;
@@ -286,6 +299,9 @@ let QuickGestures = {
         const subY = y - this._lastY;
         const deltaX = Math.abs(subX);
         const deltaY = Math.abs(subY);
+        var w = this._selectedTab.window.document.documentElement.clientWidth;
+        var h = this._selectedTab.window.document.documentElement.clientHeight;
+        debug("x, y: w, h: " + x + "," + y + "," + w + "," + h + "," + cWin.innerWidth);
 
         if (deltaX < this._threshold && deltaY < this._threshold)
             return;
@@ -350,11 +366,16 @@ let QuickGestures = {
         }
     },
 
-    _stopStroke: function(aEvent) {
-        //debug('_stopStroke(' + aEvent + ')');
+    _cancelStroke: function(aEvent) {
+        this._inProgress = false;
+        this._stopStroke(aEvent);
+    },
 
+    _stopStroke: function(aEvent) {
+        debug('_stopStroke(' + aEvent + ')');
         if (this._inProgress) {
 
+            debug("inProgress");
             // To avoid unintended input for too quick gesture
             const currentTime = (new Date()).getTime();
             const interval = this._branch.getIntPref('threshold.interval')
@@ -363,12 +384,17 @@ let QuickGestures = {
                 this._gesture = this._gesture.slice(0, -1);
             }
 
+            debug("command:" + this._gesture);
+            for(i in this._mapG2C) {
+                debug("M: " + i);
+            }
             if (this._gesture
                 && this._gesture in this._mapG2C) {
 
                 let command = this._mapG2C[this._gesture];
 
                 try {
+                    debug("runCallback:" + this._gesture);
                     let message = command.callback(this._chromeWindow);
 
                     if (message && this._branch.getBoolPref('toast.visible'))
@@ -528,7 +554,7 @@ let QuickGestures = {
     },
 
     _setupDefaultMapping: function() {
-        //debug('_setupDefaultMapping()');
+        debug('_setupDefaultMapping()');
 
         this._mapG2C = {};  // {gesture:command, ...}
         this._mapK2G = {};  // {commandKey:gesture, ...}
@@ -539,15 +565,19 @@ let QuickGestures = {
             this._mapK2G[commandKey] = command.defaultGesture;
 
             if (command.defaultGesture) {
+                debug("setting: " + command.defaultGesture);
                 command.name = tr(commandKey);
                 command.gesture = command.defaultGesture;
                 this._mapG2C[command.gesture] = command;
+                debug("setting: done: " + command.defaultGesture);
             }
         }
     },
 
     _updateMapping: function() {
         //debug('_updateMapping()');
+        
+        return; // disabled
 
         if (!this._branch)
             return;
@@ -569,6 +599,7 @@ let QuickGestures = {
         this._mapG2C = {};  // {gesture:command, ...}
 
         for (let commandKey in this._commands) {
+            debug("commandKey: " + commandKey);
             let command = this._commands[commandKey];
             let gesture = '';
 
@@ -592,7 +623,9 @@ let QuickGestures = {
             if (gesture) {
                 command.name = tr(commandKey);
                 command.gesture = gesture;
+                debug("updating: " + command.defaultGesture);
                 this._mapG2C[command.gesture] = command;
+                debug("updating: done: " + command.defaultGesture);
             }
         }
 
@@ -603,6 +636,22 @@ let QuickGestures = {
     },
 
     _commands: {
+        'ZoomIn': {
+            defaultGesture: 'D',
+            callback: function(aWindow) {
+                debug("D");
+                zoomIn();
+                return tr('HistoryBack_Msg');
+            }
+        },
+        'ZoomOut': {
+            defaultGesture: 'U',
+            callback: function(aWindow) {
+                debug("U");
+                zoomOut();
+                return tr('HistoryBack_Msg');
+            }
+        },
         'HistoryBack': {
             defaultGesture: 'DR',
             callback: function(aWindow) {
@@ -959,6 +1008,34 @@ function getExistingTab(aUrl, aTabs) {
             return tab;
     }
     return null;
+}
+
+function getSelectedTab() {
+    let chromeWindow = Services.wm.getMostRecentWindow('navigator:browser');
+    let selectedTab = chromeWindow.BrowserApp.selectedTab;
+    return selectedTab;
+}
+
+function zoomIn() {
+    let chromeWindow = Services.wm.getMostRecentWindow('navigator:browser');
+    let selectedTab = chromeWindow.BrowserApp.selectedTab;
+    let window = selectedTab.window;
+    vp = selectedTab.getViewport();
+    vp.zoom = vp.zoom+0.2;
+    debug("ZoomIn: " + vp.zoom + "," + selectedTab._zoom + "," + selectedTab._drawZoom);
+    selectedTab.setViewport(vp);
+    selectedTab.sendViewportUpdate();
+}
+
+function zoomOut() {
+    let chromeWindow = Services.wm.getMostRecentWindow('navigator:browser');
+    let selectedTab = chromeWindow.BrowserApp.selectedTab;
+    let window = selectedTab.window;
+    vp = selectedTab.getViewport();
+    vp.zoom = vp.zoom-0.2;
+    debug("ZoomOut: " + vp.zoom + "," + selectedTab._zoom + "," + selectedTab._drawZoom);
+    selectedTab.setViewport(vp);
+    selectedTab.sendViewportUpdate();
 }
 
 let gStringBundle = null;
