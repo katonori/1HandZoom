@@ -4,23 +4,13 @@
      xmlns:em="http://www.mozilla.org/2004/em-rdf#">
 
     <Description about="urn:mozilla:install-manifest">
-        <em:id>{555e08fb-e62f-45a9-aee9-560ef520209b}</em:id>
+        <em:id>quickgestures2@katonori.addons.mozilla.org</em:id>
         <em:type>2</em:type>
         <em:name>mytest</em:name>
         <em:version>1.2.4</em:version>
         <em:bootstrap>true</em:bootstrap>
         <em:description>Swipe gestures with single finger</em:description>
         <em:creator>katonori</em:creator>
-        <em:optionsURL>chrome://quickgestures2/content/options.xul</em:optionsURL>
-
-        <em:localized>
-            <Description>
-                <em:locale>ja</em:locale>
-                <em:name>mytest</em:name>
-                <em:description>画面を一筆書きで操作できるようにします</em:description>
-                <em:creator>takachan</em:creator>
-            </Description>
-        </em:localized>
 
         <!-- Firefox for Android -->
         <em:targetApplication>
