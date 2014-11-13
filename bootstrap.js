@@ -23,7 +23,6 @@ let QuickGestures2 = {
         //debug('_setupDefaultPrefs()');
 
         let branch = Services.prefs.getDefaultBranch('extensions.quickgestures2.');
-        branch.setBoolPref('layer.visible', true);
         branch.setBoolPref('toast.visible', true);
         branch.setIntPref('threshold.angle', 60);  // Threshold degree (10 ~ 80)
         branch.setIntPref('threshold.splits', 16);  // Division number of screen width (2 ~ 16)
@@ -160,8 +159,6 @@ let QuickGestures2 = {
 
     handleEvent: function(aEvent) {
         let fingers = null;
-        let selectedTab = getSelectedTab();
-        let window = selectedTab.window;
 
         switch (aEvent.type) {
             case 'touchstart':
@@ -229,16 +226,12 @@ let QuickGestures2 = {
         this._shouldStopPanning = false;
         this._lastDirection = '';
         this._lastDetTime = (new Date()).getTime();
-
-        //this._prepareLayer(aEvent.view.document, viewport);
-        this._prepareLayer(this._selectedTab.window.document, viewport);
     },
 
     _progressStroke: function(aEvent) {
         //debug('_progressStroke(' + aEvent.type + ')');
         const touch = aEvent.touches.item(0);
         const cWin = this._contentWindow;
-        //const docW = this._selectedTab.window.document.documentElement.clientWidth;
         const docW = cWin.innerWidth;
         const docH = this._selectedTab.window.document.documentElement.clientHeight;
         const range = docW * 0.85;
@@ -269,8 +262,6 @@ let QuickGestures2 = {
             }
         }
 
-        //this._displayDebugInfo(touch);
-
         const x = touch.screenX;
         const y = touch.screenY;
         const subX = x - this._lastX;
@@ -296,21 +287,6 @@ let QuickGestures2 = {
         this._lastX = x;
         this._lastY = y;
 
-        // Ongoing gesture command will be cancelled when a user
-        // drawed a diagonal gesture twice in quick succession,
-        // ratio: tan(15deg) < (deltaY/deltaX) < tan(75deg) : if angle == 30;
-        const ratio = deltaY / deltaX;
-        if (ratio > this._ratio1 && ratio < this._ratio2) {
-            if (this._lastDirection == '*') {
-                this._inProgress = false;
-                this._shouldStopPanning = false;
-                this._displayLayer();
-            } else {
-                this._lastDirection = '*';
-            }
-            return;
-        }
-
         if (direction != this._lastDirection) {
             if (!this._shouldStopPanning
                 && this._gesture.length > 1
@@ -334,8 +310,6 @@ let QuickGestures2 = {
         this._lastDetTime = (new Date()).getTime();
 
         if (this._gesture.length > 1) {
-            this._displayLayer();
-
             if (!this._shouldStopPanning
                 && !this._gesture.match(/^[UD]+$/)
                 && !this._gesture.match(/^[LR]+$/)) {
@@ -388,125 +362,9 @@ let QuickGestures2 = {
 
         }
 
-        this._hideLayer();
         this._clearTimer();
         this._gesture = '';
         this._inProgress = false;
-    },
-
-    // Display coordination info for debug on the this._layer
-    _displayDebugInfo: function(aTouch) {
-        const cWin = this._contentWindow;
-        const vp = this._selectedTab.getViewport();
-
-        let msg = [];
-        msg.push(this._gesture);
-        msg.push('v.zoom('+ vp.zoom + ')');
-        msg.push('v.xy('+ vp.x +', '+ vp.y + ')');
-        msg.push('v.cssXY('+ vp.cssX +', '+ vp.cssY +')');
-        msg.push('v.pageLTRB('+ vp.pageLeft +', '+ vp.pageTop +', '+ vp.pageRight +', '+ vp.pageBottom +')');
-        msg.push('v.cssLTRB('+ vp.cssPageLeft +', '+ vp.cssPageTop +', '+ vp.cssPageRight +', '+ vp.cssPageBottom +')');
-        msg.push('v.WH('+ vp.width +', '+ vp.height +')');
-        msg.push('v.cssWH('+ vp.cssWidth +', '+ vp.cssHeight +')');
-        msg.push('w.outerWH('+ cWin.outerWidth +', '+ cWin.outerHeight +')');
-        msg.push('w.innerWH('+ cWin.innerWidth +', '+ cWin.innerHeight +')');
-        msg.push('w.scrollXY('+ cWin.scrollX +', '+ cWin.scrollY +')');
-        msg.push('t.clientXY('+ aTouch.clientX +', '+ aTouch.clientY +')');
-        msg.push('t.screenXY('+ aTouch.screenX +', '+ aTouch.screenY +')');
-        msg.push('t.pageXY('+ aTouch.pageX +', '+ aTouch.pageY +')');
-
-        if (this._layer) {
-            this._layer.innerHTML = msg.join('<br />');
-            this._layer.style.visibility = 'visible';
-            this._layer.style.height = 'auto';
-        }
-    },
-
-    _prepareLayer: function(aDocument, aViewport) {
-        //debug('_prepareLayer('+ aDocument + ',' + aViewport + ')');
-
-        if (!aDocument.body || !this._branch.getBoolPref('layer.visible')) {
-            this._layer = null;
-            return;
-        }
-
-        let layer = aDocument.getElementById('quickgestures-layer');
-        if (!layer) {
-            layer = aDocument.createElement('div');
-            layer.id = 'quickgestures-layer';
-
-            layer.style.display = 'inline';
-            layer.style.position = 'fixed';
-            layer.style.top = '-2px';
-            layer.style.left = '0';
-            layer.style.zIndex = 0x7FFFFFFF;
-            layer.style.padding = '5px 4px 3px 4px';
-            layer.style.borderBottom = 'solid 1px #aaa';
-            layer.style.visibility = 'hidden';
-            layer.style.backgroundColor = '#eee';
-            layer.style.color = '#333';
-            layer.style.textAlign = 'center';
-            layer.style.verticalAlign = 'middle';
-            layer.style.fontFamily = 'Roboto,sans-serif';
-
-            try {
-                aDocument.body.appendChild(layer);
-            } catch (ex) {
-                this._layer = null;
-                return;
-            }
-        }
-
-        const width = Math.round(aViewport.cssWidth);
-        const height = Math.round(aViewport.cssHeight / 25);
-
-        layer.style.width = width + 'px';
-        layer.style.height = height + 'px';
-        layer.style.fontSize = Math.round(height * 0.90) + 'px';
-
-        while (layer.firstChild)
-            layer.removeChild(layer.firstChild);
-        
-        layer.appendChild(aDocument.createTextNode(''));
-        this._layer = layer;
-    },
-
-    _displayLayer: function() {
-        //debug('_displayLayer()');
-
-        if (!this._layer)
-            return;
-
-        let text;
-        let doc = this._layer.ownerDocument;
-        while (this._layer.firstChild)
-            this._layer.removeChild(this._layer.firstChild);
-
-        if (this._inProgress) {
-            if (this._gesture in this._mapG2C) {
-                this._layer.style.backgroundColor = '#33B5E5';
-                let command = this._mapG2C[this._gesture];
-                text = this._gesture + ' (' + tr(command.name) + ')';
-            } else {
-                this._layer.style.backgroundColor = '#eee';
-                text = this._gesture;
-            }
-        } else {
-            this._layer.style.backgroundColor = '#FFBB33';
-            text = tr('Cancel_Msg');
-        }
-
-        this._layer.style.visibility = 'visible';
-        this._layer.appendChild(doc.createTextNode(text));
-    },
-
-    _hideLayer: function() {
-        //debug('_hideLayer()');
-
-        if (!this._layer)
-            return;
-
-        this._layer.style.visibility = 'hidden';
     },
 
     _restartTimer: function() {
@@ -517,7 +375,6 @@ let QuickGestures2 = {
         this._timerID = this._contentWindow.setTimeout(function(self) {
             self._inProgress = false;
             self._shouldStopPanning = false;
-            self._displayLayer();
             //debug('gesture timeout: ' + self._timerID);
         }, timeout_msec, this);
 
@@ -742,9 +599,7 @@ function getSelectedTab() {
 }
 
 function zoomIn() {
-    let chromeWindow = Services.wm.getMostRecentWindow('navigator:browser');
-    let selectedTab = chromeWindow.BrowserApp.selectedTab;
-    let window = selectedTab.window;
+    let selectedTab = getSelectedTab();
     vp = selectedTab.getViewport();
     vp.zoom = vp.zoom+0.2;
     debug("ZoomIn: " + vp.zoom + "," + selectedTab._zoom + "," + selectedTab._drawZoom);
@@ -753,9 +608,7 @@ function zoomIn() {
 }
 
 function zoomOut() {
-    let chromeWindow = Services.wm.getMostRecentWindow('navigator:browser');
-    let selectedTab = chromeWindow.BrowserApp.selectedTab;
-    let window = selectedTab.window;
+    let selectedTab = getSelectedTab();
     vp = selectedTab.getViewport();
     vp.zoom = vp.zoom-0.2;
     debug("ZoomOut: " + vp.zoom + "," + selectedTab._zoom + "," + selectedTab._drawZoom);
