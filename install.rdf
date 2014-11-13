@@ -11,7 +11,7 @@
         <em:bootstrap>true</em:bootstrap>
         <em:description>Swipe gestures with single finger</em:description>
         <em:creator>katonori</em:creator>
-        <em:optionsURL>chrome://quickgestures/content/options.xul</em:optionsURL>
+        <em:optionsURL>chrome://quickgestures2/content/options.xul</em:optionsURL>
 
         <em:localized>
             <Description>

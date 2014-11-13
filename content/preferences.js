@@ -6,16 +6,16 @@ Cu.import('resource:gre/modules/Services.jsm');
 let gStringBundle = null;
 let gUserMapK2G = {};
 
-let gBranch = Services.prefs.getBranch('extensions.quickgestures.');
+let gBranch = Services.prefs.getBranch('extensions.quickgestures2.');
 
 function log(aMsg) {
-    aMsg = 'QuickGestures#preferences.js: ' + aMsg;
+    aMsg = 'QuickGestures2#preferences.js: ' + aMsg;
     Services.console.logStringMessage(aMsg);
 }
 
 function tr(aName) {
     if (!gStringBundle) {
-        let uri = 'chrome://quickgestures/locale/main.properties';
+        let uri = 'chrome://quickgestures2/locale/main.properties';
         gStringBundle = Services.strings.createBundle(uri);
     }
 

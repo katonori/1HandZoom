@@ -8,9 +8,9 @@ Cu.import('resource://gre/modules/PrivateBrowsingUtils.jsm');
 const DEBUG = true; // If false, the debug() function does nothing.
 
 //===========================================
-// QuickGestures
+// QuickGestures2
 //===========================================
-let QuickGestures = {
+let QuickGestures2 = {
     install: function() {
         //debug('install()');
     },
@@ -22,11 +22,11 @@ let QuickGestures = {
     _setupDefaultPrefs: function() {
         //debug('_setupDefaultPrefs()');
 
-        let branch = Services.prefs.getDefaultBranch('extensions.quickgestures.');
+        let branch = Services.prefs.getDefaultBranch('extensions.quickgestures2.');
         branch.setBoolPref('layer.visible', true);
         branch.setBoolPref('toast.visible', true);
         branch.setIntPref('threshold.angle', 60);  // Threshold degree (10 ~ 80)
-        branch.setIntPref('threshold.splits', 10);  // Division number of screen width (2 ~ 16)
+        branch.setIntPref('threshold.splits', 16);  // Division number of screen width (2 ~ 16)
         branch.setIntPref('threshold.timeout', 1500);  // Gesture timeout (millisecond)
         branch.setIntPref('threshold.interval', 80);  // Time to avoid unintended input (millisecond)
         branch.setCharPref('mapk2g', JSON.stringify(this._mapK2G));
@@ -78,14 +78,13 @@ let QuickGestures = {
         this._setupDefaultPrefs();
 
         if (!this._branch) {
-            this._branch = Services.prefs.getBranch('extensions.quickgestures.');
+            this._branch = Services.prefs.getBranch('extensions.quickgestures2.');
 
             this._updateThreshold();
             this._updateMapping();
 
             this._branch.addObserver('', this, false);
         }
-        Services.obs.addObserver(this, "Gesture:DoubleTap", false);
     },
 
     uninit: function() {
@@ -110,8 +109,6 @@ let QuickGestures = {
         deck.addEventListener('touchstart', this, true);
         deck.addEventListener('touchmove', this, true);
         deck.addEventListener('touchend', this, true);
-        aWindow.document.addEventListener('MozMagnifyGesture', this, true);
-        aWindow.document.addEventListener('MozMagnifyGestureStart', this, true);
 
         // add menu
         this._menuIdZoomIn = aWindow.NativeWindow.menu.add("Zoom In", null, this._cbZoomIn);
@@ -138,8 +135,6 @@ let QuickGestures = {
         deck.removeEventListener('touchstart', this, true);
         deck.removeEventListener('touchmove', this, true);
         deck.removeEventListener('touchend', this, true);
-        aWindow.document.removeEventListener('MozMagnifyGesture', this, true);
-        aWindow.document.removeEventListener('MozMagnifyGestureStart', this, true);
     },
 
     observe: function(aSubject, aTopic, aData) {
@@ -161,7 +156,6 @@ let QuickGestures = {
                 this._updateThreshold();
                 break;
         }
-        this._handleUserEvent(aTopic, aData);
     },
 
     handleEvent: function(aEvent) {
@@ -202,22 +196,6 @@ let QuickGestures = {
                 this._stopStroke(aEvent);
                 break;
         }
-
-        switch (aEvent.type) {
-            case 'MozMagnifyGestureStart':
-            case 'MozMagnifyGesture':
-                break;
-        }
-    },
-
-    _handleUserEvent: function(aTopic, aData) {
-        let chromeWindow = Services.wm.getMostRecentWindow('navigator:browser');
-        let selectedTab = chromeWindow.BrowserApp.selectedTab;
-        let window = selectedTab.window;
-        switch(aTopic) {
-        case "Gesture:DoubleTap":
-            break;
-        }
     },
 
     _startStroke: function(aEvent) {
@@ -231,7 +209,7 @@ let QuickGestures = {
         //const docW = this._selectedTab.window.document.documentElement.clientWidth;
         const docW = cWin.innerWidth;
         const docH = this._selectedTab.window.document.documentElement.clientHeight;
-        const range = docW * 0.9;
+        const range = docW * 0.85;
         if(touch.screenX < range) {
             this._cancelStroke(aEvent);
             return;
@@ -263,7 +241,7 @@ let QuickGestures = {
         //const docW = this._selectedTab.window.document.documentElement.clientWidth;
         const docW = cWin.innerWidth;
         const docH = this._selectedTab.window.document.documentElement.clientHeight;
-        const range = docW * 0.9;
+        const range = docW * 0.85;
         if(touch.screenX < range) {
             this._cancelStroke(aEvent);
             return;
@@ -301,7 +279,8 @@ let QuickGestures = {
         const deltaY = Math.abs(subY);
         var w = this._selectedTab.window.document.documentElement.clientWidth;
         var h = this._selectedTab.window.document.documentElement.clientHeight;
-        debug("x, y: w, h: " + x + "," + y + "," + w + "," + h + "," + cWin.innerWidth);
+        debug("x, y: w, h: " + x + "," + y + "," + w + "," + h + "," + cWin.innerHeight);
+        debug("cx, cy: " + touch.clientX + "," + touch.clientY);
 
         if (deltaX < this._threshold && deltaY < this._threshold)
             return;
@@ -641,7 +620,7 @@ let QuickGestures = {
             callback: function(aWindow) {
                 debug("D");
                 zoomIn();
-                return tr('HistoryBack_Msg');
+                return tr('ZoomIn');
             }
         },
         'ZoomOut': {
@@ -649,261 +628,7 @@ let QuickGestures = {
             callback: function(aWindow) {
                 debug("U");
                 zoomOut();
-                return tr('HistoryBack_Msg');
-            }
-        },
-        'HistoryBack': {
-            defaultGesture: 'DR',
-            callback: function(aWindow) {
-                let browser = aWindow.BrowserApp.selectedBrowser;
-                if (browser.canGoBack) {
-                    browser.goBack();
-                    return tr('HistoryBack_Msg');
-                }
-                return tr('HistoryBackFailed_Msg');
-            }
-        },
-        'HistoryForward': {
-            defaultGesture: 'DL',
-            callback: function(aWindow) {
-                let browser = aWindow.BrowserApp.selectedBrowser;
-                if (browser.canGoForward) {
-                    browser.goForward();
-                    return tr('HistoryForward_Msg');
-                }
-                return tr('HistoryForwardFailed_Msg');
-            }
-        },
-        'Reload': {
-            defaultGesture: '',
-            callback: function(aWindow) {
-                aWindow.BrowserApp.selectedBrowser.reload();
-                return tr('Reload_Msg');
-            }
-        },
-        'ScrollTop': {
-            defaultGesture: 'RD',
-            callback: function(aWindow) {
-                let window = aWindow.BrowserApp.selectedTab.window;
-                window.scroll(window.scrollX, 0);
-                return tr('ScrollTop_Msg');
-            }
-        },
-        'ScrollBottom': {
-            defaultGesture: 'RU',
-            callback: function(aWindow) {
-                let window = aWindow.BrowserApp.selectedTab.window;
-                let doc = window.document.documentElement;
-                let bottom = Math.max(doc.scrollHeight, doc.offsetHeight);
-                window.scroll(window.scrollX, bottom);
-                return tr('ScrollBottom_Msg');
-            }
-        },
-        'PreviousTab': {
-            defaultGesture: 'UR',
-            callback: function(aWindow) {
-                let BrowserApp = aWindow.BrowserApp;
-                let tabs = BrowserApp.tabs;
-                let tab = BrowserApp.selectedTab;
-                let isPrivate = PrivateBrowsingUtils.isWindowPrivate(tab.window);
-                let i = current_i = tabs.indexOf(tab);
-
-                // Skip about:home
-                do {
-                    i = (i-1)>=0 ? (i-1) : (tabs.length-1);
-                    tab = tabs[i];
-
-                } while (tab.window.location == 'about:home'
-                    || PrivateBrowsingUtils.isWindowPrivate(tab.window) != isPrivate 
-                );
-
-                if (i != current_i) {
-                    BrowserApp.selectTab(tab);
-                    return tr('PreviousTab_Msg');
-                } else {
-                    return tr('OnlyTab_Msg');
-                }
-
-            }
-        },
-        'NextTab': {
-            defaultGesture: 'UL',
-            callback: function(aWindow) {
-                let BrowserApp = aWindow.BrowserApp;
-                let tabs = BrowserApp.tabs;
-                let tab = BrowserApp.selectedTab;
-                let isPrivate = PrivateBrowsingUtils.isWindowPrivate(tab.window);
-                let i = current_i = tabs.indexOf(tab);
-
-                // Skip about:home
-                do {
-                    i = (i+1)<=(tabs.length-1) ? (i+1) : 0;
-                    tab = tabs[i];
-
-                } while (tab.window.location == 'about:home'
-                    || PrivateBrowsingUtils.isWindowPrivate(tab.window) != isPrivate 
-                );
-
-                if (i != current_i) {
-                    BrowserApp.selectTab(tab);
-                    return tr('NextTab_Msg');
-                } else {
-                    return tr('OnlyTab_Msg');
-                }
-            }
-        },
-        'CloseTab': {
-            defaultGesture: 'DRU',
-            callback: function(aWindow) {
-                let BrowserApp = aWindow.BrowserApp;
-                let tab = BrowserApp.selectedTab;
-
-                if (BrowserApp.tabs.length == 1)
-                    BrowserApp.addTab('about:home', { selected: true });
-
-                BrowserApp.closeTab(tab);
-
-                return tr('CloseTab_Msg');
-            }
-        },
-        'UndoCloseTab': {
-            defaultGesture: 'DLU',
-            callback: function(aWindow) {
-                let ss = Cc['@mozilla.org/browser/sessionstore;1']
-                                        .getService(Ci.nsISessionStore);
-                let restorableTabCount = ss.getClosedTabCount(aWindow);
-
-                // SessionStore can't handle the private browsing mode... 
-                if (restorableTabCount > 0) {
-                    ss.undoCloseTab(aWindow, 0);  // Reopen the most recent tab
-                    return tr('UndoCloseTab_Msg');
-                } else {
-                    return tr('NoRestorableTab_Msg');
-                }
-            }
-        },
-        'ToggleFullscreen': {
-            defaultGesture: 'URD',
-            callback: function(aWindow) {
-                aWindow.fullScreen = !aWindow.fullScreen;
-                if (aWindow.fullScreen)
-                    return tr('EnterFullscreen_Msg');
-                else
-                    return tr('ExitFullscreen_Msg');
-            }
-        },
-        'QuitFirefox': {
-            defaultGesture: '',
-            callback: function(aWindow) {
-                aWindow.BrowserApp.quit();
-                return tr('QuitFirefox_Msg');
-            }
-        },
-        'Home': {
-            defaultGesture: '',
-            callback: function(aWindow) {
-                let url = 'about:home';
-                let BrowserApp = aWindow.BrowserApp;
-                let tab = getExistingTab(url, BrowserApp.tabs);
-                if (tab) BrowserApp.selectTab(tab);
-                else BrowserApp.addTab(url);
-                return tr('Home_Msg');
-            }
-        },
-        'NewTab': {
-            defaultGesture: '',
-            callback: function(aWindow) {
-                let url = 'about:blank';
-                let BrowserApp = aWindow.BrowserApp;
-                let tab = getExistingTab(url, BrowserApp.tabs);
-                if (tab) BrowserApp.selectTab(tab);
-                else BrowserApp.addTab(url);
-
-                sendMessageToJava({ type: 'ToggleChrome:Focus' });
-                return tr('NewTab_Msg');
-            }
-        },
-        // From Firefox 20.0
-        // Return an error page if using a previous version,
-        'NewPrivateTab': {
-            defaultGesture: '',
-            callback: function(aWindow) {
-                let url = 'about:privatebrowsing';
-                let BrowserApp = aWindow.BrowserApp;
-                let tab = getExistingTab(url, BrowserApp.tabs);
-                if (tab) BrowserApp.selectTab(tab);
-                else BrowserApp.addTab(url,{ selected: true,
-                                             parentId: BrowserApp.selectedTab.id,
-                                             isPrivate: true });
-                sendMessageToJava({ type: 'ToggleChrome:Focus' });
-                return tr('NewPrivateTab_Msg');
-            }
-        },
-        'AboutAddons': {
-            defaultGesture: '',
-            callback: function(aWindow) {
-                let url = 'about:addons';
-                let BrowserApp = aWindow.BrowserApp;
-                let tab = getExistingTab(url, BrowserApp.tabs);
-                if (tab) BrowserApp.selectTab(tab);
-                else BrowserApp.addTab(url);
-                return tr('AboutAddons_Msg');
-            }
-        },
-        'AboutDownloads': {
-            defaultGesture: '',
-            callback: function(aWindow) {
-                let url = 'about:downloads';
-                let BrowserApp = aWindow.BrowserApp;
-                let tab = getExistingTab(url, BrowserApp.tabs);
-                if (tab) BrowserApp.selectTab(tab);
-                else BrowserApp.addTab(url);
-                return tr('AboutDownloads_Msg');
-            }
-        },
-        'ViewGestures': {
-            defaultGesture: 'RDL',
-            callback: function(aWindow) {
-                let url = 'chrome://quickgestures/content/preferences.xhtml';
-                let BrowserApp = aWindow.BrowserApp;
-                let tab = getExistingTab(url, BrowserApp.tabs);
-                if (tab) BrowserApp.selectTab(tab);
-                else BrowserApp.addTab(url);
-                return tr('ViewGestures_Msg');
-            }
-        },
-        'ClearPrivacyInfo': {
-            defaultGesture: '',
-            callback: function(aWindow) {
-                let items = {
-                    'history': true,
-                    'downloads': true,
-                    'cookies': true,
-                    'sessions': true,
-                };
-
-                try {
-                    aWindow.BrowserApp.sanitize(JSON.stringify(items));
-                    return tr('ClearPrivacyInfo_Msg');
-                } catch (ex) {
-                    return ex;
-                }
-            }
-        },
-        'DeleteCookies': {
-            defaultGesture: '',
-            callback: function(aWindow) {
-                let items = {
-                    'cookies': true,
-                    'sessions': true,
-                };
-
-                try {
-                    aWindow.BrowserApp.sanitize(JSON.stringify(items));
-                    return tr('DeleteCookies_Msg');
-                } catch (ex) {
-                    return ex;
-                }
+                return tr('ZoomOut');
             }
         },
     },
@@ -914,24 +639,24 @@ let QuickGestures = {
 // bootstrap.js API
 //===========================================
 function install(aData, aReason) {
-    //QuickGestures.install();
+    //QuickGestures2.install();
 }
 
 function uninstall(aData, aReason) {
     //if (aReason == ADDON_UNINSTALL)
-        //QuickGestures.uninstall();
+        //QuickGestures2.uninstall();
 }
 
 function startup(aData, aReason) {
     // General setup
-    QuickGestures.init();
+    QuickGestures2.init();
 
     // Load into any existing windows
     let windows = Services.wm.getEnumerator('navigator:browser');
     while (windows.hasMoreElements()) {
         let win = windows.getNext().QueryInterface(Ci.nsIDOMWindow);
         if (win)
-            QuickGestures.load(win);
+            QuickGestures2.load(win);
     }
 
     // Load into any new windows
@@ -952,11 +677,11 @@ function shutdown(aData, aReason) {
     while (windows.hasMoreElements()) {
         let win = windows.getNext().QueryInterface(Ci.nsIDOMWindow);
         if (win)
-            QuickGestures.unload(win);
+            QuickGestures2.unload(win);
     }
 
     // General teardown
-    QuickGestures.uninit();
+    QuickGestures2.uninit();
 }
 
 let windowListener = {
@@ -967,7 +692,7 @@ let windowListener = {
 
         win.addEventListener('UIReady', function() {
             win.removeEventListener('UIReady', arguments.callee, false);
-            QuickGestures.load(win);
+            QuickGestures2.load(win);
         }, false);
     },
 
@@ -986,7 +711,7 @@ function alert(aMsg) {
 
 function debug(aMsg) {
     if (!DEBUG) return;
-    aMsg = 'QuickGestures: ' + aMsg;
+    aMsg = 'QuickGestures2: ' + aMsg;
     Services.console.logStringMessage(aMsg);
 }
 
@@ -1043,7 +768,7 @@ let gStringBundle = null;
 function tr(aName) {
     // For translation
     if (!gStringBundle) {
-        let uri = 'chrome://quickgestures/locale/main.properties';
+        let uri = 'chrome://quickgestures2/locale/main.properties';
         gStringBundle = Services.strings.createBundle(uri);
     }
 
