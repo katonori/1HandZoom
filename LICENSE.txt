@@ -11,13 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * The Original Code is the "Quick Gestures".
+ * The Original Code is the "1HandZoom".
  *
- * The Initial Developer of the Original Code is takachan.
- * Portions created by the Initial Developer are Copyright (C) 2012
+ * The Initial Developer of the Original Code is katonori.
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
+ *   Many parts of the code of this Add-On is brought from "Quick Gestures"
+ *   by takachan.
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or

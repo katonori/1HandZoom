@@ -4,12 +4,12 @@
      xmlns:em="http://www.mozilla.org/2004/em-rdf#">
 
     <Description about="urn:mozilla:install-manifest">
-        <em:id>quickgestures2@katonori.addons.mozilla.org</em:id>
+        <em:id>onehandzoom@katonori.addons.mozilla.org</em:id>
         <em:type>2</em:type>
-        <em:name>mytest</em:name>
-        <em:version>1.2.4</em:version>
+        <em:name>1HandZoom</em:name>
+        <em:version>1.0.0</em:version>
         <em:bootstrap>true</em:bootstrap>
-        <em:description>Swipe gestures with single finger</em:description>
+        <em:description>Enable zoom by one hand</em:description>
         <em:creator>katonori</em:creator>
 
         <!-- Firefox for Android -->

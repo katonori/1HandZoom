@@ -8,9 +8,9 @@ Cu.import('resource://gre/modules/PrivateBrowsingUtils.jsm');
 const DEBUG = true; // If false, the debug() function does nothing.
 
 //===========================================
-// QuickGestures2
+// OneHandZoom
 //===========================================
-let QuickGestures2 = {
+let OneHandZoom = {
     install: function() {
         //debug('install()');
     },
@@ -22,9 +22,8 @@ let QuickGestures2 = {
     _setupDefaultPrefs: function() {
         //debug('_setupDefaultPrefs()');
 
-        let branch = Services.prefs.getDefaultBranch('extensions.quickgestures2.');
+        let branch = Services.prefs.getDefaultBranch('extensions.onehandzoom.');
         branch.setBoolPref('toast.visible', true);
-        branch.setIntPref('threshold.angle', 60);  // Threshold degree (10 ~ 80)
         branch.setIntPref('threshold.splits', 16);  // Division number of screen width (2 ~ 16)
         branch.setIntPref('threshold.timeout', 1500);  // Gesture timeout (millisecond)
         branch.setIntPref('threshold.interval', 80);  // Time to avoid unintended input (millisecond)
@@ -54,16 +53,6 @@ let QuickGestures2 = {
             this._branch.setIntPref('threshold.splits', splits);
         }
         this._splits = splits * 2;
-
-        let angle = this._branch.getIntPref('threshold.angle');
-        if (angle < 10 || angle > 80) {
-            angle = (angle < 10) ? 10 : 80;
-            this._changePref = true;
-            this._branch.setIntPref('threshold.angle', angle);
-        }
-
-        this._ratio1 = Math.tan(Math.PI * angle / 360);
-        this._ratio2 = Math.tan(Math.PI * (180 - angle) / 360);
     },
 
     init: function() {
@@ -77,7 +66,7 @@ let QuickGestures2 = {
         this._setupDefaultPrefs();
 
         if (!this._branch) {
-            this._branch = Services.prefs.getBranch('extensions.quickgestures2.');
+            this._branch = Services.prefs.getBranch('extensions.onehandzoom.');
 
             this._updateThreshold();
             this._updateMapping();
@@ -149,7 +138,6 @@ let QuickGestures2 = {
                 this._updateMapping();
                 break;
 
-            case 'threshold.angle':
             case 'threshold.splits':
             case 'threshold.timeout':
                 this._updateThreshold();
@@ -496,24 +484,24 @@ let QuickGestures2 = {
 // bootstrap.js API
 //===========================================
 function install(aData, aReason) {
-    //QuickGestures2.install();
+    //OneHandZoom.install();
 }
 
 function uninstall(aData, aReason) {
     //if (aReason == ADDON_UNINSTALL)
-        //QuickGestures2.uninstall();
+        //OneHandZoom.uninstall();
 }
 
 function startup(aData, aReason) {
     // General setup
-    QuickGestures2.init();
+    OneHandZoom.init();
 
     // Load into any existing windows
     let windows = Services.wm.getEnumerator('navigator:browser');
     while (windows.hasMoreElements()) {
         let win = windows.getNext().QueryInterface(Ci.nsIDOMWindow);
         if (win)
-            QuickGestures2.load(win);
+            OneHandZoom.load(win);
     }
 
     // Load into any new windows
@@ -534,11 +522,11 @@ function shutdown(aData, aReason) {
     while (windows.hasMoreElements()) {
         let win = windows.getNext().QueryInterface(Ci.nsIDOMWindow);
         if (win)
-            QuickGestures2.unload(win);
+            OneHandZoom.unload(win);
     }
 
     // General teardown
-    QuickGestures2.uninit();
+    OneHandZoom.uninit();
 }
 
 let windowListener = {
@@ -549,7 +537,7 @@ let windowListener = {
 
         win.addEventListener('UIReady', function() {
             win.removeEventListener('UIReady', arguments.callee, false);
-            QuickGestures2.load(win);
+            OneHandZoom.load(win);
         }, false);
     },
 
@@ -562,13 +550,9 @@ let windowListener = {
 //===========================================
 // Utilities
 //===========================================
-function alert(aMsg) {
-    Services.prompt.alert(null, "My Add-on", aMsg);
-}
-
 function debug(aMsg) {
     if (!DEBUG) return;
-    aMsg = 'QuickGestures2: ' + aMsg;
+    aMsg = 'OneHandZoom: ' + aMsg;
     Services.console.logStringMessage(aMsg);
 }
 
@@ -580,16 +564,6 @@ function showToast(aWindow, aMsg) {
 function sendMessageToJava(aMessage) {
     let bridge = Cc['@mozilla.org/android/bridge;1'].getService(Ci.nsIAndroidBridge);
     return bridge.handleGeckoMessage(JSON.stringify(aMessage));
-}
-
-function getExistingTab(aUrl, aTabs) {
-    let tab;
-    for (let i=0; i < aTabs.length; i++) {
-        tab = aTabs[i];
-        if (tab.window.location == aUrl)
-            return tab;
-    }
-    return null;
 }
 
 function getSelectedTab() {
@@ -621,7 +595,7 @@ let gStringBundle = null;
 function tr(aName) {
     // For translation
     if (!gStringBundle) {
-        let uri = 'chrome://quickgestures2/locale/main.properties';
+        let uri = 'chrome://onehandzoom/locale/main.properties';
         gStringBundle = Services.strings.createBundle(uri);
     }
 
