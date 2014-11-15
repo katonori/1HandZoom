@@ -9,7 +9,7 @@
         <em:name>1HandZoom</em:name>
         <em:version>1.0.0</em:version>
         <em:bootstrap>true</em:bootstrap>
-        <em:description>Enable zoom by one hand</em:description>
+        <em:description>This add-on enables you to zoom in/out by one hand</em:description>
         <em:creator>katonori</em:creator>
 
         <!-- Firefox for Android -->
