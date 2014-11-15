@@ -193,7 +193,7 @@ let OneHandZoom = {
         //const docW = this._selectedTab.window.document.documentElement.clientWidth;
         const docW = cWin.innerWidth;
         const docH = this._selectedTab.window.document.documentElement.clientHeight;
-        const range = docW * 0.85;
+        const range = docW * 0.90;
         if(touch.screenX < range) {
             this._cancelStroke(aEvent);
             return;
@@ -221,7 +221,7 @@ let OneHandZoom = {
         const cWin = this._contentWindow;
         const docW = cWin.innerWidth;
         const docH = this._selectedTab.window.document.documentElement.clientHeight;
-        const range = docW * 0.85;
+        const range = docW * 0.90;
         if(touch.screenX < range) {
             this._cancelStroke(aEvent);
             return;
