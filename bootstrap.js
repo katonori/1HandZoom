@@ -4,8 +4,7 @@ const Cu = Components.utils;
 Cu.import('resource://gre/modules/Services.jsm');
 Cu.import('resource://gre/modules/PrivateBrowsingUtils.jsm');
 
-//const DEBUG = false; // If false, the debug() function does nothing.
-const DEBUG = true; // If false, the debug() function does nothing.
+const DEBUG = false; // If false, the debug() function does nothing.
 
 //===========================================
 // OneHandZoom
@@ -266,11 +265,7 @@ let OneHandZoom = {
 
         this._restartTimer();
 
-        let direction;
-        if (deltaX > deltaY)
-            direction = (subX<0 ? 'L' : 'R');
-        else
-            direction = (subY<0 ? 'U' : 'D');
+        let direction = (subY<0 ? 'U' : 'D');
 
         this._lastX = x;
         this._lastY = y;
@@ -278,9 +273,8 @@ let OneHandZoom = {
         if (direction != this._lastDirection) {
             if (!this._shouldStopPanning
                 && this._gesture.length > 1
-                && !(direction + this._lastDirection).match(/UD|DU|LR|RL/)
-                && !this._gesture.match(/^[UD]+$/)
-                && !this._gesture.match(/^[LR]+$/)) {
+                && !(direction + this._lastDirection).match(/UD|DU/)
+                && !this._gesture.match(/^[UD]+$/)) {
 
                 this._shouldStopPanning = true;
             }
@@ -299,8 +293,7 @@ let OneHandZoom = {
 
         if (this._gesture.length > 1) {
             if (!this._shouldStopPanning
-                && !this._gesture.match(/^[UD]+$/)
-                && !this._gesture.match(/^[LR]+$/)) {
+                && !this._gesture.match(/^[UD]+$/)) {
 
                 this._shouldStopPanning = true;
             }
