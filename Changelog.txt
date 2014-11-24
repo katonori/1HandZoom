@@ -1,0 +1,4 @@
+* 1.0.1
+    - Adjust a parameter that specify the area swipe gesture makes an effect.
+* 1.0.0
+    - Initial release.
