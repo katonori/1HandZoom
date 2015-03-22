@@ -568,7 +568,10 @@ function getSelectedTab() {
 function zoomIn() {
     let selectedTab = getSelectedTab();
     vp = selectedTab.getViewport();
+    let zoom_old = vp.zoom;
     vp.zoom = vp.zoom+0.2;
+    vp.x *= vp.zoom/zoom_old;
+    vp.y *= vp.zoom/zoom_old;
     debug("ZoomIn: " + vp.zoom + "," + selectedTab._zoom + "," + selectedTab._drawZoom);
     selectedTab.setViewport(vp);
     selectedTab.sendViewportUpdate();
@@ -577,7 +580,10 @@ function zoomIn() {
 function zoomOut() {
     let selectedTab = getSelectedTab();
     vp = selectedTab.getViewport();
+    let zoom_old = vp.zoom;
     vp.zoom = vp.zoom-0.2;
+    vp.x *= vp.zoom/zoom_old;
+    vp.y *= vp.zoom/zoom_old;
     debug("ZoomOut: " + vp.zoom + "," + selectedTab._zoom + "," + selectedTab._drawZoom);
     selectedTab.setViewport(vp);
     selectedTab.sendViewportUpdate();
