@@ -1,3 +1,6 @@
+* 1.0.2
+    - Fix a bug that the view port position is wrong after zoom in/out.
+    - Adjust a parameter for sensitivity of a gesture.
 * 1.0.1
     - Adjust a parameter that specify the area swipe gesture makes an effect.
 * 1.0.0
