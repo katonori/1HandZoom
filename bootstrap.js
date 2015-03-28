@@ -6,6 +6,8 @@ Cu.import('resource://gre/modules/PrivateBrowsingUtils.jsm');
 
 const DEBUG = false; // If false, the debug() function does nothing.
 
+const SPLIT_MAX = 64;
+
 //===========================================
 // OneHandZoom
 //===========================================
@@ -23,7 +25,7 @@ let OneHandZoom = {
 
         let branch = Services.prefs.getDefaultBranch('extensions.onehandzoom.');
         branch.setBoolPref('toast.visible', true);
-        branch.setIntPref('threshold.splits', 16);  // Division number of screen width (2 ~ 16)
+        branch.setIntPref('threshold.splits', 64);  // Division number of screen width (2 ~ 16)
         branch.setIntPref('threshold.timeout', 1500);  // Gesture timeout (millisecond)
         branch.setIntPref('threshold.interval', 80);  // Time to avoid unintended input (millisecond)
         branch.setCharPref('mapk2g', JSON.stringify(this._mapK2G));
@@ -46,12 +48,12 @@ let OneHandZoom = {
         }
  
         let splits = this._branch.getIntPref('threshold.splits');
-        if (splits < 2 || splits > 16) {
-            splits = (splits < 2) ? 2 : 16;
+        if (splits < 2 || splits > SPLIT_MAX) {
+            splits = (splits < 2) ? 2 : SPLIT_MAX;
             this._changePref = true;
             this._branch.setIntPref('threshold.splits', splits);
         }
-        this._splits = splits * 2;
+        this._splits = splits;
     },
 
     init: function() {
