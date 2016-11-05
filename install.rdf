@@ -7,7 +7,7 @@
         <em:id>onehandzoom@katonori.addons.mozilla.org</em:id>
         <em:type>2</em:type>
         <em:name>1HandZoom</em:name>
-        <em:version>1.0.2</em:version>
+        <em:version>1.1.0</em:version>
         <em:bootstrap>true</em:bootstrap>
         <em:description>This add-on enables you to zoom in/out by one hand</em:description>
         <em:creator>katonori</em:creator>
@@ -16,8 +16,8 @@
         <em:targetApplication>
             <Description>
                 <em:id>{aa3c5121-dab2-40e2-81ca-7ea25febc110}</em:id>
-                <em:minVersion>17.0</em:minVersion>
-                <em:maxVersion>34.0</em:maxVersion>
+                <em:minVersion>40.0</em:minVersion>
+                <em:maxVersion>51.0</em:maxVersion>
             </Description>
         </em:targetApplication>
     </Description>

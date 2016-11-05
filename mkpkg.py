@@ -37,8 +37,6 @@ if __name__ == "__main__":
     print fileList
     status, out = commands.getstatusoutput('rm -f %s; \
         grep -rE "DEBUG|TEST" . | grep const; \
-        zip -r %s %s; \
-        cp %s /var/www/html/a.xpi ; \
-        cp %s /var/www/html/'%(fn, fn, fileList, fn, fn))
+        zip -r %s %s'%(fn, fn, fileList))
     print status
     print out

@@ -1,3 +1,7 @@
+* 1.1.0
+    - Change how to realize zoom from modifying viewport.zoom to setting
+      scale() to style.transform .
+    - Enable multiple zoom commands by the single gesture.
 * 1.0.2
     - Fix a bug that the view port position is wrong after zoom in/out.
     - Adjust a parameter for sensitivity of a gesture.
